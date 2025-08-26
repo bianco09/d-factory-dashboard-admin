@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("USER") // 'USER' or 'ADMIN'
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  bookings  Booking[]
+}
+
+model Tour {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  location    String?
+  days        Int?
+  price       Float
+  type        String    @default("single")
+  category    String    @default("adventure") // adventure, cultural, nature, food, historical, etc.
+  included    String[]  @default([]) // Array of included items
+  excluded    String[]  @default([]) // Array of excluded items
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  bookings    Booking[]
+  tourPlans   TourPlan[]
+}
+
+model TourPlan {
+  id          Int    @id @default(autoincrement())
+  tourId      Int
+  tour        Tour   @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  day         Int    // Day number (1, 2, 3, etc.)
+  title       String // Title for the day (e.g., "Arrival and City Tour")
+  description String // Detailed description of activities for this day
+  included    String[] @default([]) // Array of included items for this specific day
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([tourId, day]) // Ensure one plan per day per tour
+}
+
+model Booking {
+  id        Int      @id @default(autoincrement())
+  date      DateTime @default(now()) 
+  
+  // User info - either linked to account or guest info
+  userId    Int?     // Optional - null for guest bookings
+  user      User?    @relation(fields: [userId], references: [id])
+  
+  // Guest booking information (used when userId is null)
+  guestName  String?  // Guest's name
+  guestEmail String?  // Guest's email
+  guestPhone String?  // Guest's phone (optional)
+  
+  // Booking details
+  people    Int      // Number of people
+  total     Float    // Total price
+  tourId    Int      // Tour being booked
+  tour      Tour     @relation(fields: [tourId], references: [id])
+  
+  // Booking status
+  status    String   @default("CONFIRMED") // CONFIRMED, CANCELLED
+  
+  // Additional notes
+  notes     String?  // Special requests or notes
+}

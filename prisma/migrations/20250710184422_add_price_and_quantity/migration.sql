@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Booking" ALTER COLUMN "price" DROP DEFAULT,
+ALTER COLUMN "people" DROP DEFAULT;

@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Server",
+      "type": "shell",
+      "command": "node src/index.js",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Prisma Migrate Dev",
+      "type": "shell",
+      "command": "npx prisma migrate dev --name init",
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}
