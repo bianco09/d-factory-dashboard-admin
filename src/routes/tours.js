@@ -55,7 +55,7 @@ router.get('/:id', async (req, res) => {
 // Create a tour (Admin only)
 router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    let { title, description, location, days, price, type, category, included, excluded, tourPlans } = req.body;
+    let { title, description, location, days, price, type, startDate, endDate, categories, included, excluded, status, completionPercentage, tourPlans } = req.body;
 
     // Validation
     if (!title || !price) {
@@ -69,9 +69,11 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
     // Set defaults and validate type
     type = type === "multi" ? "multi" : "single";
     days = type === "single" ? 1 : (days || 1);
-    category = category || "adventure";
+    categories = Array.isArray(categories) ? categories : [];
     included = Array.isArray(included) ? included : [];
     excluded = Array.isArray(excluded) ? excluded : [];
+    status = status || "draft";
+    completionPercentage = completionPercentage || 0;
 
     if (type === "multi" && (!days || days < 2)) {
       return res.status(400).json({ error: 'Multi-day tours must have at least 2 days' });
@@ -111,9 +113,13 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
         days, 
         price: parseFloat(price), 
         type,
-        category: category || "adventure",
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null,
+        categories: categories || [],
         included: included || [],
         excluded: excluded || [],
+        status: status || "draft",
+        completionPercentage: completionPercentage || 0,
         tourPlans: Array.isArray(tourPlans) && tourPlans.length > 0 ? {
           create: tourPlans.map(plan => ({
             day: plan.day,
@@ -143,7 +149,7 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
 // Update a tour (Admin only)
 router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    let { title, description, location, days, price, type, category, included, excluded, tourPlans } = req.body;
+    let { title, description, location, days, price, type, startDate, endDate, categories, included, excluded, status, completionPercentage, tourPlans } = req.body;
 
     // Check if tour exists
     const existingTour = await prisma.tour.findUnique({
@@ -162,9 +168,13 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
     if (location !== undefined) updateData.location = location;
-    if (category !== undefined) updateData.category = category;
+    if (Array.isArray(categories)) updateData.categories = categories;
     if (Array.isArray(included)) updateData.included = included;
     if (Array.isArray(excluded)) updateData.excluded = excluded;
+    if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null;
+    if (endDate !== undefined) updateData.endDate = endDate ? new Date(endDate) : null;
+    if (status !== undefined) updateData.status = status;
+    if (completionPercentage !== undefined) updateData.completionPercentage = completionPercentage;
     
     if (price !== undefined) {
       if (price <= 0) {
