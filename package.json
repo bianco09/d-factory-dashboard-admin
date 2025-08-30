@@ -3,11 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
-    "build": "prisma generate",
-    "postinstall": "prisma generate",
+    "vercel-build": "prisma generate",
     "seed": "node prisma/seed.js"
   },
   "keywords": [],
