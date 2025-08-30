@@ -1,6 +1,11 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, requireAdmin, requireOwnerOrAdmin } = require('../middleware/auth');
+const { 
+  validateBookingInput, 
+  validateGuestLookup, 
+  handleValidationErrors 
+} = require('../middleware/sanitization');
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -36,7 +41,7 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // Create a booking (Public endpoint - supports both guest and authenticated users)
-router.post('/', async (req, res) => {
+router.post('/', validateBookingInput, handleValidationErrors, async (req, res) => {
   try {
     const { tourId, people, guestName, guestEmail, guestPhone, notes } = req.body;
     
@@ -341,7 +346,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Get guest bookings by email (Public endpoint)
-router.post('/guest-lookup', async (req, res) => {
+router.post('/guest-lookup', validateGuestLookup, handleValidationErrors, async (req, res) => {
   try {
     const { email } = req.body;
 
