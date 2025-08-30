@@ -56,17 +56,11 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
       'http://localhost:3002'
     ];
 
+console.log('🌍 Environment:', process.env.NODE_ENV);
+console.log('🔗 Allowed CORS origins:', allowedOrigins);
+
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, Postman, etc.)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
