@@ -3,12 +3,13 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 const { authenticateToken } = require('../middleware/auth');
+const { sanitizeInput, validateAuthData } = require('../middleware/sanitization');
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
 // User registration
-router.post('/register', async (req, res) => {
+router.post('/register', sanitizeInput, validateAuthData, async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
@@ -69,7 +70,7 @@ router.post('/register', async (req, res) => {
 });
 
 // User login
-router.post('/login', async (req, res) => {
+router.post('/login', sanitizeInput, validateAuthData, async (req, res) => {
   try {
     const { email, password } = req.body;
 
