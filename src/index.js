@@ -148,11 +148,13 @@ app.use('*', (req, res) => {
 
 const PORT = process.env.PORT || 4000;
 
-// For Vercel, export the app instead of listening
-if (process.env.NODE_ENV === 'production') {
-  module.exports = app;
-} else {
+// Export for Vercel serverless and also start server for local development
+if (require.main === module) {
+  // Only start server if this file is run directly (not imported)
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
 }
+
+// Export the app for Vercel
+module.exports = app;
