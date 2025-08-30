@@ -17,7 +17,7 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
           select: { id: true, title: true, location: true, price: true, days: true }
         }
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { date: 'desc' }
     });
 
     // Add booking type indicator
@@ -70,8 +70,8 @@ router.post('/', async (req, res) => {
     }
 
     // Validation
-    if (!tourId || !date || !people) {
-      return res.status(400).json({ error: 'Tour ID, date, and number of people are required' });
+    if (!tourId || !people) {
+      return res.status(400).json({ error: 'Tour ID and number of people are required' });
     }
 
     if (people < 1) {
@@ -101,12 +101,7 @@ router.post('/', async (req, res) => {
 
     // Calculate total price
     const total = tour.price * people;
-    const bookingDate = new Date();
-
-    // Check if booking date is in the future
-    if (bookingDate <= new Date()) {
-      return res.status(400).json({ error: 'Booking date must be in the future' });
-    }
+    const bookingDate = new Date(); // Current timestamp for when booking was made
 
     // Create booking data
     const bookingData = {
@@ -169,7 +164,7 @@ router.get('/user/:userId', authenticateToken, requireOwnerOrAdmin('userId'), as
           select: { id: true, title: true, location: true, price: true, days: true }
         }
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { date: 'desc' }
     });
     res.json(bookings);
   } catch (error) {
@@ -188,7 +183,7 @@ router.get('/my-bookings', authenticateToken, async (req, res) => {
           select: { id: true, title: true, location: true, price: true, days: true }
         }
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { date: 'desc' }
     });
     res.json(bookings);
   } catch (error) {
@@ -207,7 +202,7 @@ router.get('/tour/:tourId', authenticateToken, requireAdmin, async (req, res) =>
           select: { id: true, name: true, email: true }
         }
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { date: 'desc' }
     });
     res.json(bookings);
   } catch (error) {
@@ -370,7 +365,7 @@ router.post('/guest-lookup', async (req, res) => {
           select: { id: true, title: true, location: true, price: true, days: true }
         }
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { date: 'desc' }
     });
 
     res.json({

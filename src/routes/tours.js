@@ -5,8 +5,40 @@ const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// Get all tours (Public - no authentication required)
-router.get('/', async (req, res) => {
+// Get all tours summary (Public - lightweight for cards)
+router.get('/summary', async (req, res) => {
+  try {
+    const tours = await prisma.tour.findMany({
+      select: {
+        id: true,
+        title: true,
+        location: true,
+        days: true,
+        price: true,
+        type: true,
+        startDate: true,
+        endDate: true,
+        categories: true,
+        status: true,
+        createdAt: true,
+        _count: {
+          select: { bookings: true }
+        }
+      },
+      where: {
+        status: 'published' // Only show published tours to public
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json(tours);
+  } catch (error) {
+    console.error('Get tours summary error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get all tours (Admin only - full details)
+router.get('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const tours = await prisma.tour.findMany({
       include: {
