@@ -144,9 +144,7 @@ router.post('/', validateBookingInput, handleValidationErrors, async (req, res) 
 
     const responseMessage = isAuthenticated 
       ? 'Booking created successfully for your account. One of our representatives will contact you soon to confirm the tour details.'
-      : 'Guest booking created successfully. One of our representatives will contact you soon to confirm the tour details.';
-
-    res.status(201).json({
+      : 'Guest booking created successfully. One of our representatives will contact you soon to confirm the tour details.';    res.status(201).json({
       message: responseMessage,
       booking: {
         ...booking,
