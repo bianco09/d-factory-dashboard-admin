@@ -81,7 +81,7 @@ app.use(logSuspiciousActivity);
 // Determine allowed origins based on environment
 const allowedOrigins = process.env.NODE_ENV === 'production' 
   ? [
-      'https://aventur-journeys-fe.vercel.app',
+      'https://the-curio-expeditions.vercel.app',
       'https://d-factory-dashboard-admin.vercel.app'
     ]
   : [
