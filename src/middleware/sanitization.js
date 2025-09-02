@@ -1,17 +1,69 @@
 const { body, validationResult } = require('express-validator');
 const xss = require('xss');
 
-// XSS protection options
+// XSS protection options for regular text
 const xssOptions = {
   whiteList: {}, // No HTML tags allowed
   stripIgnoreTag: true,
   stripIgnoreTagBody: ['script', 'style'],
 };
 
+// XSS protection options for rich text content (like tour descriptions)
+const richTextXssOptions = {
+  whiteList: {
+    // Basic formatting
+    'p': [],
+    'br': [],
+    'div': [],
+    'span': [],
+    // Text formatting
+    'strong': [],
+    'b': [],
+    'em': [],
+    'i': [],
+    'u': [],
+    's': [],
+    'strike': [],
+    // Lists
+    'ul': [],
+    'ol': [],
+    'li': [],
+    // Headings
+    'h1': [],
+    'h2': [],
+    'h3': [],
+    'h4': [],
+    'h5': [],
+    'h6': [],
+    // Tables
+    'table': ['style'],
+    'thead': [],
+    'tbody': [],
+    'tr': [],
+    'th': [],
+    'td': [],
+    // Links
+    'a': ['href', 'title', 'target'],
+    // Images
+    'img': ['src', 'alt', 'title', 'width', 'height'],
+    // Line breaks
+    'hr': []
+  },
+  stripIgnoreTag: true,
+  stripIgnoreTagBody: ['script', 'style'],
+  allowCommentTag: false
+};
+
 // Sanitize text input to prevent XSS
 const sanitizeText = (text) => {
   if (typeof text !== 'string') return text;
   return xss(text.trim(), xssOptions);
+};
+
+// Sanitize rich text content (allows safe HTML)
+const sanitizeRichText = (text) => {
+  if (typeof text !== 'string') return text;
+  return xss(text.trim(), richTextXssOptions);
 };
 
 // Handle validation errors
@@ -71,6 +123,34 @@ const sanitizeInputs = (req, res, next) => {
       if (typeof req.body[key] === 'string') {
         req.body[key] = sanitizeText(req.body[key]);
       }
+    }
+  }
+  next();
+};
+
+// Special middleware for tour inputs that preserves HTML in description
+const sanitizeTourInputs = (req, res, next) => {
+  if (req.body && typeof req.body === 'object') {
+    for (const key in req.body) {
+      if (typeof req.body[key] === 'string') {
+        if (key === 'description') {
+          // Allow safe HTML in description
+          req.body[key] = sanitizeRichText(req.body[key]);
+        } else {
+          // Regular sanitization for other fields
+          req.body[key] = sanitizeText(req.body[key]);
+        }
+      }
+    }
+    
+    // Handle tour plans descriptions
+    if (Array.isArray(req.body.tourPlans)) {
+      req.body.tourPlans = req.body.tourPlans.map(plan => ({
+        ...plan,
+        description: typeof plan.description === 'string' 
+          ? sanitizeRichText(plan.description) 
+          : plan.description
+      }));
     }
   }
   next();
@@ -154,8 +234,8 @@ const validateTourInput = [
   
   body('description')
     .optional()
-    .isLength({ max: 2000 })
-    .withMessage('Description must be less than 2000 characters'),
+    .isLength({ max: 5000 }) // Increased from 2000 to accommodate HTML markup
+    .withMessage('Description must be less than 5000 characters'),
   
   body('location')
     .optional()
@@ -195,6 +275,7 @@ const validateAuthInput = [
 module.exports = {
   sanitizeInput: sanitizeInputs, // Add alias for consistency
   sanitizeInputs,
+  sanitizeTourInputs, // New middleware for tour-specific sanitization
   validateBookingData: validateBookingInput,
   validateBookingInput,
   validateGuestLookup,
@@ -204,5 +285,6 @@ module.exports = {
   validateAuthInput,
   handleValidationErrors,
   logSuspiciousActivity, // Now properly exports the middleware
-  sanitizeText
+  sanitizeText,
+  sanitizeRichText // Export the new rich text sanitizer
 };

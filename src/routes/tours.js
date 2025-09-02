@@ -1,7 +1,7 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
-const { sanitizeInput, validateTourData } = require('../middleware/sanitization');
+const { sanitizeTourInputs, validateTourData } = require('../middleware/sanitization');
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -86,7 +86,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create a tour (Admin only)
-router.post('/', authenticateToken, requireAdmin, sanitizeInput, validateTourData, async (req, res) => {
+router.post('/', authenticateToken, requireAdmin, sanitizeTourInputs, validateTourData, async (req, res) => {
   try {
     let { title, description, location, days, price, type, startDate, endDate, categories, included, excluded, status, completionPercentage, tourPlans } = req.body;
 
@@ -180,7 +180,7 @@ router.post('/', authenticateToken, requireAdmin, sanitizeInput, validateTourDat
 });
 
 // Update a tour (Admin only)
-router.put('/:id', authenticateToken, requireAdmin, sanitizeInput, validateTourData, async (req, res) => {
+router.put('/:id', authenticateToken, requireAdmin, sanitizeTourInputs, validateTourData, async (req, res) => {
   try {
     let { title, description, location, days, price, type, startDate, endDate, categories, included, excluded, status, completionPercentage, tourPlans } = req.body;
 
