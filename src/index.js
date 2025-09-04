@@ -82,7 +82,8 @@ app.use(logSuspiciousActivity);
 const allowedOrigins = process.env.NODE_ENV === 'production' 
   ? [
       'https://thecurioexpeditions.vercel.app',
-      'https://d-factory-dashboard-admin.vercel.app'
+      'https://d-factory-dashboard-admin.vercel.app',
+      'https://d-factory-fe-dashboard-admin.vercel.app'
     ]
   : [
       'http://localhost:3000', 
